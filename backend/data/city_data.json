@@ -1,0 +1,681 @@
+{
+  "city_name": "Riyadh",
+  "center": {
+    "lat": 24.7136,
+    "lng": 46.6753
+  },
+  "locations": [
+    {
+      "id": "loc1",
+      "name": "King Fahd Road - Kingdom Centre",
+      "lat": 24.7114,
+      "lng": 46.6744,
+      "type": "arterial_intersection"
+    },
+    {
+      "id": "loc2",
+      "name": "Olaya Street - Al Faisaliah District",
+      "lat": 24.6906,
+      "lng": 46.6841,
+      "type": "commercial"
+    },
+    {
+      "id": "loc3",
+      "name": "King Fahd Medical City Area",
+      "lat": 24.6868,
+      "lng": 46.7045,
+      "type": "medical"
+    },
+    {
+      "id": "loc4",
+      "name": "King Abdullah Financial District",
+      "lat": 24.7636,
+      "lng": 46.6406,
+      "type": "business"
+    },
+    {
+      "id": "loc5",
+      "name": "King Saud University - Main Gate",
+      "lat": 24.7246,
+      "lng": 46.6239,
+      "type": "education"
+    },
+    {
+      "id": "loc6",
+      "name": "Riyadh Front / Airport Road",
+      "lat": 24.8342,
+      "lng": 46.7299,
+      "type": "commercial"
+    },
+    {
+      "id": "loc7",
+      "name": "Al Malaz District",
+      "lat": 24.6656,
+      "lng": 46.7331,
+      "type": "residential"
+    },
+    {
+      "id": "loc8",
+      "name": "Al Murabba Historical District",
+      "lat": 24.6465,
+      "lng": 46.7107,
+      "type": "civic"
+    },
+    {
+      "id": "loc9",
+      "name": "Northern Ring Road - Exit 5",
+      "lat": 24.7582,
+      "lng": 46.6711,
+      "type": "highway"
+    },
+    {
+      "id": "loc10",
+      "name": "Eastern Ring Road - Exit 13",
+      "lat": 24.7422,
+      "lng": 46.7774,
+      "type": "highway"
+    }
+  ],
+  "hospitals": [
+    {
+      "id": "h1",
+      "name": "King Fahad Medical City",
+      "lat": 24.6868,
+      "lng": 46.7045,
+      "capacity": 1200,
+      "ambulances": 10,
+      "contact": "997",
+      "address": "Makkah Al Mukarramah Branch Road, Riyadh"
+    },
+    {
+      "id": "h2",
+      "name": "King Faisal Specialist Hospital & Research Centre",
+      "lat": 24.67,
+      "lng": 46.674,
+      "capacity": 1100,
+      "ambulances": 8,
+      "contact": "997",
+      "address": "Al Maather, Riyadh"
+    },
+    {
+      "id": "h3",
+      "name": "Dr. Sulaiman Al Habib Hospital - Olaya",
+      "lat": 24.7036,
+      "lng": 46.6836,
+      "capacity": 400,
+      "ambulances": 5,
+      "contact": "997",
+      "address": "Olaya, Riyadh"
+    },
+    {
+      "id": "h4",
+      "name": "Saudi German Hospital Riyadh",
+      "lat": 24.774,
+      "lng": 46.6545,
+      "capacity": 300,
+      "ambulances": 4,
+      "contact": "997",
+      "address": "Sahafa, Riyadh"
+    }
+  ],
+  "fire_stations": [
+    {
+      "id": "fs1",
+      "name": "Civil Defense / Fire Station - Olaya",
+      "lat": 24.6984,
+      "lng": 46.6842,
+      "units": 3,
+      "personnel": 28,
+      "address": "Olaya District, Riyadh"
+    },
+    {
+      "id": "fs2",
+      "name": "Civil Defense / Fire Station - Al Malaz",
+      "lat": 24.6659,
+      "lng": 46.7375,
+      "units": 4,
+      "personnel": 34,
+      "address": "Al Malaz, Riyadh"
+    },
+    {
+      "id": "fs3",
+      "name": "Civil Defense / Fire Station - North Riyadh",
+      "lat": 24.7707,
+      "lng": 46.6712,
+      "units": 3,
+      "personnel": 24,
+      "address": "North Riyadh"
+    },
+    {
+      "id": "fs4",
+      "name": "Civil Defense / Fire Station - East Riyadh",
+      "lat": 24.7358,
+      "lng": 46.775,
+      "units": 3,
+      "personnel": 24,
+      "address": "Eastern Ring Road, Riyadh"
+    }
+  ],
+  "police_stations": [
+    {
+      "id": "ps1",
+      "name": "Olaya Police Station",
+      "lat": 24.6998,
+      "lng": 46.6879,
+      "units": 10,
+      "personnel": 85,
+      "address": "Olaya, Riyadh"
+    },
+    {
+      "id": "ps2",
+      "name": "Al Malaz Police Station",
+      "lat": 24.6715,
+      "lng": 46.7357,
+      "units": 7,
+      "personnel": 60,
+      "address": "Al Malaz, Riyadh"
+    },
+    {
+      "id": "ps3",
+      "name": "Al Murabba Police Station",
+      "lat": 24.6495,
+      "lng": 46.712,
+      "units": 8,
+      "personnel": 70,
+      "address": "Al Murabba, Riyadh"
+    },
+    {
+      "id": "ps4",
+      "name": "North Riyadh Police Station",
+      "lat": 24.776,
+      "lng": 46.6601,
+      "units": 8,
+      "personnel": 68,
+      "address": "North Riyadh"
+    }
+  ],
+  "civil_defense": [
+    {
+      "id": "cd1",
+      "name": "Saudi Civil Defense - Riyadh Directorate",
+      "lat": 24.6706,
+      "lng": 46.7148,
+      "units": 6,
+      "personnel": 60,
+      "address": "Riyadh"
+    },
+    {
+      "id": "cd2",
+      "name": "Civil Defense Hazmat Support - Olaya",
+      "lat": 24.7018,
+      "lng": 46.6822,
+      "units": 2,
+      "personnel": 18,
+      "address": "Olaya, Riyadh"
+    },
+    {
+      "id": "cd3",
+      "name": "Civil Defense Support Unit - North Riyadh",
+      "lat": 24.771,
+      "lng": 46.672,
+      "units": 2,
+      "personnel": 18,
+      "address": "North Riyadh"
+    }
+  ],
+  "roads": [
+    {
+      "id": "r1",
+      "name": "King Fahd Road",
+      "type": "arterial",
+      "lanes": 6,
+      "speed_limit": 90,
+      "coords": [
+        [
+          24.6465,
+          46.7107
+        ],
+        [
+          24.6906,
+          46.6841
+        ],
+        [
+          24.7114,
+          46.6744
+        ],
+        [
+          24.7582,
+          46.6711
+        ]
+      ]
+    },
+    {
+      "id": "r2",
+      "name": "Makkah Al Mukarramah Road",
+      "type": "arterial",
+      "lanes": 6,
+      "speed_limit": 80,
+      "coords": [
+        [
+          24.67,
+          46.674
+        ],
+        [
+          24.6868,
+          46.7045
+        ],
+        [
+          24.6656,
+          46.7331
+        ]
+      ]
+    },
+    {
+      "id": "r3",
+      "name": "Olaya Street",
+      "type": "arterial",
+      "lanes": 4,
+      "speed_limit": 70,
+      "coords": [
+        [
+          24.6906,
+          46.6841
+        ],
+        [
+          24.7036,
+          46.6836
+        ],
+        [
+          24.7114,
+          46.6744
+        ]
+      ]
+    },
+    {
+      "id": "r4",
+      "name": "Northern Ring Road",
+      "type": "highway",
+      "lanes": 8,
+      "speed_limit": 100,
+      "coords": [
+        [
+          24.7582,
+          46.6711
+        ],
+        [
+          24.7636,
+          46.6406
+        ],
+        [
+          24.776,
+          46.6601
+        ]
+      ]
+    },
+    {
+      "id": "r5",
+      "name": "Eastern Ring Road",
+      "type": "highway",
+      "lanes": 8,
+      "speed_limit": 100,
+      "coords": [
+        [
+          24.7422,
+          46.7774
+        ],
+        [
+          24.7358,
+          46.775
+        ],
+        [
+          24.6656,
+          46.7331
+        ]
+      ]
+    }
+  ],
+  "air_quality_stations": [
+    {
+      "id": "aqs1",
+      "name": "AQ Station - Central Riyadh",
+      "lat": 24.7136,
+      "lng": 46.6753,
+      "baseline_aqi": 58
+    },
+    {
+      "id": "aqs2",
+      "name": "AQ Station - Al Malaz",
+      "lat": 24.6656,
+      "lng": 46.7331,
+      "baseline_aqi": 66
+    },
+    {
+      "id": "aqs3",
+      "name": "AQ Station - North Riyadh",
+      "lat": 24.7582,
+      "lng": 46.6711,
+      "baseline_aqi": 51
+    }
+  ],
+  "traffic_cameras": [
+    {
+      "id": "tc1",
+      "name": "Camera - King Fahd Road / Kingdom Centre",
+      "lat": 24.7114,
+      "lng": 46.6744
+    },
+    {
+      "id": "tc2",
+      "name": "Camera - Makkah Road / KFMC",
+      "lat": 24.6868,
+      "lng": 46.7045
+    },
+    {
+      "id": "tc3",
+      "name": "Camera - Northern Ring Exit 5",
+      "lat": 24.7582,
+      "lng": 46.6711
+    },
+    {
+      "id": "tc4",
+      "name": "Camera - Eastern Ring Exit 13",
+      "lat": 24.7422,
+      "lng": 46.7774
+    }
+  ],
+  "emergency_vehicles": [
+    {
+      "id": "ev1",
+      "unitId": "AMB-OLY-01",
+      "type": "Ambulance",
+      "lat": 24.7012,
+      "lng": 46.6796,
+      "status": "Available",
+      "availability": "Active",
+      "currentCongestionLevel": "Medium",
+      "stationId": "amb1",
+      "stationName": "Saudi Red Crescent Response Base - Olaya Zone"
+    },
+    {
+      "id": "ev2",
+      "unitId": "AMB-MLZ-02",
+      "type": "Ambulance",
+      "lat": 24.6668,
+      "lng": 46.7309,
+      "status": "Available",
+      "availability": "Active",
+      "currentCongestionLevel": "Low",
+      "stationId": "amb2",
+      "stationName": "Saudi Red Crescent Response Base - Al Malaz Zone"
+    },
+    {
+      "id": "ev3",
+      "unitId": "POL-OLY-01",
+      "type": "Police Car",
+      "lat": 24.6998,
+      "lng": 46.6879,
+      "status": "Available",
+      "availability": "Active",
+      "currentCongestionLevel": "Critical",
+      "stationId": "ps1",
+      "stationName": "Olaya Police Station"
+    },
+    {
+      "id": "ev4",
+      "unitId": "POL-MLZ-02",
+      "type": "Police Car",
+      "lat": 24.6715,
+      "lng": 46.7357,
+      "status": "Available",
+      "availability": "Active",
+      "currentCongestionLevel": "Low",
+      "stationId": "ps2",
+      "stationName": "Al Malaz Police Station"
+    },
+    {
+      "id": "ev5",
+      "unitId": "FIRE-OLY-01",
+      "type": "Fire Truck",
+      "lat": 24.6984,
+      "lng": 46.6842,
+      "status": "Available",
+      "availability": "Active",
+      "currentCongestionLevel": "Medium",
+      "stationId": "fs1",
+      "stationName": "Civil Defense / Fire Station - Olaya"
+    },
+    {
+      "id": "ev6",
+      "unitId": "FIRE-MLZ-02",
+      "type": "Fire Truck",
+      "lat": 24.6659,
+      "lng": 46.7375,
+      "status": "Available",
+      "availability": "Active",
+      "currentCongestionLevel": "Low",
+      "stationId": "fs2",
+      "stationName": "Civil Defense / Fire Station - Al Malaz"
+    },
+    {
+      "id": "ev7",
+      "unitId": "CD-RYD-01",
+      "type": "Civil Defense",
+      "lat": 24.6706,
+      "lng": 46.7148,
+      "status": "Available",
+      "availability": "Active",
+      "currentCongestionLevel": "High",
+      "stationId": "cd1",
+      "stationName": "Saudi Civil Defense - Riyadh Directorate"
+    },
+    {
+      "id": "ev8",
+      "unitId": "CD-OLY-02",
+      "type": "Civil Defense",
+      "lat": 24.7018,
+      "lng": 46.6822,
+      "status": "Available",
+      "availability": "Active",
+      "currentCongestionLevel": "Medium",
+      "stationId": "cd2",
+      "stationName": "Civil Defense Hazmat Support - Olaya"
+    },
+    {
+      "id": "ev9",
+      "unitId": "TRF-KFD-01",
+      "type": "Traffic Unit",
+      "lat": 24.713,
+      "lng": 46.675,
+      "status": "Available",
+      "availability": "Active",
+      "currentCongestionLevel": "High",
+      "stationId": "tu1",
+      "stationName": "Traffic Patrol Unit - King Fahd Corridor"
+    },
+    {
+      "id": "ev10",
+      "unitId": "TRF-NRR-02",
+      "type": "Traffic Unit",
+      "lat": 24.7586,
+      "lng": 46.6713,
+      "status": "Available",
+      "availability": "Active",
+      "currentCongestionLevel": "Medium",
+      "stationId": "tu2",
+      "stationName": "Traffic Patrol Unit - Northern Ring Road"
+    },
+    {
+      "id": "ev11",
+      "unitId": "TOW-CTR-01",
+      "type": "Road Service",
+      "lat": 24.694,
+      "lng": 46.693,
+      "status": "Available",
+      "availability": "Active",
+      "currentCongestionLevel": "Medium",
+      "stationId": "rs1",
+      "stationName": "Road Service / Tow Unit - Central Riyadh"
+    },
+    {
+      "id": "ev12",
+      "unitId": "TOW-NTH-02",
+      "type": "Road Service",
+      "lat": 24.762,
+      "lng": 46.6425,
+      "status": "Available",
+      "availability": "Active",
+      "currentCongestionLevel": "Low",
+      "stationId": "rs2",
+      "stationName": "Road Service / Tow Unit - North Riyadh"
+    }
+  ],
+  "incident_history": [
+    {
+      "type": "Traffic Accident",
+      "count": 47,
+      "avg_response_time": 8.2,
+      "severity": "Medium"
+    },
+    {
+      "type": "Fire Incident",
+      "count": 12,
+      "avg_response_time": 6.5,
+      "severity": "High"
+    },
+    {
+      "type": "Road Blockage",
+      "count": 31,
+      "avg_response_time": 12.1,
+      "severity": "Low"
+    },
+    {
+      "type": "Fuel Spill",
+      "count": 9,
+      "avg_response_time": 7.3,
+      "severity": "Medium"
+    },
+    {
+      "type": "Medical Emergency",
+      "count": 63,
+      "avg_response_time": 4.9,
+      "severity": "High"
+    }
+  ],
+  "resource_data_note": "Curated Riyadh demo resources. Ambulances dispatch from Red Crescent / EMS response bases when available; hospitals are used as patient destinations, not ambulance origins.",
+  "ambulance_bases": [
+    {
+      "id": "amb1",
+      "name": "Saudi Red Crescent Response Base - Olaya Zone",
+      "lat": 24.7012,
+      "lng": 46.6796,
+      "units": 6,
+      "personnel": 24,
+      "address": "Olaya response zone, Riyadh",
+      "source": "curated_riyadh_demo"
+    },
+    {
+      "id": "amb2",
+      "name": "Saudi Red Crescent Response Base - Al Malaz Zone",
+      "lat": 24.6668,
+      "lng": 46.7309,
+      "units": 5,
+      "personnel": 20,
+      "address": "Al Malaz response zone, Riyadh",
+      "source": "curated_riyadh_demo"
+    },
+    {
+      "id": "amb3",
+      "name": "Saudi Red Crescent Response Base - North Riyadh Zone",
+      "lat": 24.7823,
+      "lng": 46.6637,
+      "units": 5,
+      "personnel": 22,
+      "address": "North Riyadh response zone",
+      "source": "curated_riyadh_demo"
+    },
+    {
+      "id": "amb4",
+      "name": "Saudi Red Crescent Response Base - East Riyadh Zone",
+      "lat": 24.7426,
+      "lng": 46.7762,
+      "units": 4,
+      "personnel": 18,
+      "address": "East Riyadh response zone",
+      "source": "curated_riyadh_demo"
+    }
+  ],
+  "traffic_units": [
+    {
+      "id": "tu1",
+      "name": "Traffic Patrol Unit - King Fahd Corridor",
+      "lat": 24.713,
+      "lng": 46.675,
+      "units": 4,
+      "personnel": 12,
+      "address": "King Fahd Road corridor, Riyadh",
+      "source": "curated_riyadh_demo"
+    },
+    {
+      "id": "tu2",
+      "name": "Traffic Patrol Unit - Northern Ring Road",
+      "lat": 24.7586,
+      "lng": 46.6713,
+      "units": 4,
+      "personnel": 12,
+      "address": "Northern Ring Road corridor, Riyadh",
+      "source": "curated_riyadh_demo"
+    },
+    {
+      "id": "tu3",
+      "name": "Traffic Patrol Unit - Makkah Road / Malaz",
+      "lat": 24.6693,
+      "lng": 46.7276,
+      "units": 3,
+      "personnel": 10,
+      "address": "Makkah Road corridor, Riyadh",
+      "source": "curated_riyadh_demo"
+    },
+    {
+      "id": "tu4",
+      "name": "Traffic Patrol Unit - Eastern Ring Road",
+      "lat": 24.7424,
+      "lng": 46.777,
+      "units": 3,
+      "personnel": 10,
+      "address": "Eastern Ring Road corridor, Riyadh",
+      "source": "curated_riyadh_demo"
+    }
+  ],
+  "road_service_units": [
+    {
+      "id": "rs1",
+      "name": "Road Service / Tow Unit - Central Riyadh",
+      "lat": 24.694,
+      "lng": 46.693,
+      "units": 3,
+      "personnel": 8,
+      "address": "Central Riyadh service zone",
+      "source": "curated_riyadh_demo"
+    },
+    {
+      "id": "rs2",
+      "name": "Road Service / Tow Unit - North Riyadh",
+      "lat": 24.762,
+      "lng": 46.6425,
+      "units": 3,
+      "personnel": 8,
+      "address": "North Riyadh service zone",
+      "source": "curated_riyadh_demo"
+    },
+    {
+      "id": "rs3",
+      "name": "Road Service / Tow Unit - East Riyadh",
+      "lat": 24.744,
+      "lng": 46.775,
+      "units": 2,
+      "personnel": 6,
+      "address": "East Riyadh service zone",
+      "source": "curated_riyadh_demo"
+    }
+  ]
+}

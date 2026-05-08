@@ -1,0 +1,78 @@
+{
+  "version": "1.0",
+  "note": "Camera Detection Simulator scenarios. Command Center uses only Cam 1 - Car Accident and Cam 2 - Fire for the demo flow.",
+  "cameras": [
+    {
+      "camera_id": "CAM-KFD-01",
+      "name": "Cam 1 - Car Accident",
+      "road_name": "King Fahd Road",
+      "location_name": "King Fahd Road - Kingdom Centre",
+      "latitude": 24.7114,
+      "longitude": 46.6744,
+      "orientation": "Northbound",
+      "status": "Online",
+      "scenario_id": "collision-high-kfd",
+      "media_url": "/static/assets/camera-feeds/car_accident_2.mp4",
+      "frame_summary": "Car accident detected with blocked lanes and visible smoke.",
+      "sensor_observations": {
+        "detected_objects": [
+          "vehicle",
+          "vehicle",
+          "smoke",
+          "blocked_lane",
+          "slow_traffic"
+        ],
+        "abnormal_stop": true,
+        "impact_pattern": true,
+        "visible_smoke": true,
+        "visible_flames": false,
+        "liquid_on_road": false,
+        "blocked_lanes": 2,
+        "lane_count": 4,
+        "average_speed_kmh": 18,
+        "speed_drop_percent": 72,
+        "queue_length_m": 520,
+        "people_visible_near_scene": 2,
+        "vehicles_involved_estimate": 2
+      },
+      "media_example_path": "/static/assets/camera-feeds/car_accident_2.mp4",
+      "display_name": "Cam 1 - Car Accident"
+    },
+    {
+      "camera_id": "CAM-OLY-02",
+      "name": "Cam 2 - Fire",
+      "road_name": "Olaya Street",
+      "location_name": "Olaya Street - Al Faisaliah District",
+      "latitude": 24.6906,
+      "longitude": 46.6841,
+      "orientation": "Southbound",
+      "status": "Online",
+      "scenario_id": "vehicle-fire-olaya",
+      "media_url": "/static/assets/camera-feeds/olaya_fire_01.mp4",
+      "frame_summary": "Vehicle fire detected with dense smoke plume.",
+      "sensor_observations": {
+        "detected_objects": [
+          "vehicle",
+          "smoke",
+          "heat_signature",
+          "pedestrians",
+          "blocked_lane"
+        ],
+        "abnormal_stop": true,
+        "impact_pattern": false,
+        "visible_smoke": true,
+        "visible_flames": true,
+        "liquid_on_road": false,
+        "blocked_lanes": 1,
+        "lane_count": 3,
+        "average_speed_kmh": 12,
+        "speed_drop_percent": 80,
+        "queue_length_m": 430,
+        "people_visible_near_scene": 5,
+        "vehicles_involved_estimate": 1
+      },
+      "media_example_path": "/static/assets/camera-feeds/olaya_fire_01.mp4",
+      "display_name": "Cam 2 - Fire"
+    }
+  ]
+}

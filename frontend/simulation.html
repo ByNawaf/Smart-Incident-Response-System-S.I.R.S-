@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Incident Simulation — S.I.R.S</title>
+<link rel="stylesheet" href="/static/css/main.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  #sim-map { height: 300px; }
+  .location-btn { padding: 6px 12px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; font-size: 11px; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; }
+  .location-btn:hover, .location-btn.selected { border-color: var(--cyan); color: var(--cyan); background: rgba(6,182,212,0.1); }
+  .type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .type-btn { padding: 14px 10px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: center; }
+  .type-btn:hover { border-color: var(--border-bright); }
+  .type-btn.selected { border-color: var(--cyan); background: rgba(6,182,212,0.12); color: var(--cyan); }
+  .type-btn .type-icon { font-size: 24px; display: block; margin-bottom: 6px; }
+  .sev-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .sev-btn { padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center; background: var(--bg-primary); transition: all 0.2s; }
+  .sev-btn[data-sev="Low"].selected { border-color: var(--green); color: var(--green); background: rgba(16,185,129,0.12); }
+  .sev-btn[data-sev="Medium"].selected { border-color: var(--yellow); color: var(--yellow); background: rgba(234,179,8,0.12); }
+  .sev-btn[data-sev="High"].selected { border-color: var(--orange); color: var(--orange); background: rgba(249,115,22,0.12); }
+  .sev-btn[data-sev="Critical"].selected { border-color: var(--red); color: var(--red); background: rgba(239,68,68,0.12); }
+</style>
+</head>
+<body>
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-title">S.I.R.S</div>
+      <div class="logo-sub">Smart Incident Response</div>
+      <div class="sidebar-status"><span class="status-dot"></span> System Operational</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Navigation</div>
+      <a href="/command-center.html" class="nav-item"><span class="nav-icon">🎛️</span> Command Center</a>
+      <a href="/index.html" class="nav-item"><span class="nav-icon">🏠</span> Home</a>
+      <a href="/dashboard.html" class="nav-item"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="/simulation.html" class="nav-item active"><span class="nav-icon">🚀</span> Simulation</a>
+      <a href="/agents.html" class="nav-item"><span class="nav-icon">🤖</span> Agents Analysis</a>
+      <a href="/reports.html" class="nav-item"><span class="nav-icon">📋</span> Reports</a>
+      <div class="nav-section-label">More</div>
+      <a href="/judges.html" class="nav-item"><span class="nav-icon">🎬</span> Judges View</a>
+      <a href="/settings.html" class="nav-item"><span class="nav-icon">⚙️</span> Settings</a>
+    </nav>
+    <div class="sidebar-footer">S.I.R.S <span class="ver">v1.6</span></div>
+  </div>
+
+  <div class="main-content">
+    <header class="header">
+      <div class="header-title">Incident Simulation</div>
+      <div class="header-spacer"></div>
+      <div class="header-time" id="live-clock">00:00:00</div>
+    </header>
+
+    <div class="page">
+      <div class="page-header">
+        <h1>Create New Incident</h1>
+        <p>Configure the incident parameters and run the Multi-Agent Analysis</p>
+      </div>
+
+      <div class="grid-2" style="grid-template-columns:3fr 2fr">
+        <!-- Form -->
+        <div>
+          <div class="card mb-16">
+            <div class="card-header"><span>🚨</span><h3>Incident Type</h3></div>
+            <div class="card-body">
+              <div class="type-grid" id="type-grid">
+                <button class="type-btn" data-type="Traffic Accident" onclick="selectType(this)"><span class="type-icon">💥</span>Traffic Accident</button>
+                <button class="type-btn" data-type="Fire Incident" onclick="selectType(this)"><span class="type-icon">🔥</span>Fire Incident</button>
+                <button class="type-btn" data-type="Road Blockage" onclick="selectType(this)"><span class="type-icon">🚧</span>Road Blockage</button>
+                <button class="type-btn" data-type="Fuel Spill" onclick="selectType(this)"><span class="type-icon">⛽</span>Fuel Spill</button>
+                <button class="type-btn" data-type="Medical Emergency" onclick="selectType(this)"><span class="type-icon">🚑</span>Medical Emergency</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-16">
+            <div class="card-header"><span>⚠️</span><h3>Severity Level</h3></div>
+            <div class="card-body">
+              <div class="sev-grid">
+                <button class="sev-btn" data-sev="Low" onclick="selectSev(this)">🟢 Low</button>
+                <button class="sev-btn" data-sev="Medium" onclick="selectSev(this)">🟡 Medium</button>
+                <button class="sev-btn" data-sev="High" onclick="selectSev(this)">🟠 High</button>
+                <button class="sev-btn" data-sev="Critical" onclick="selectSev(this)">🔴 Critical</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-16">
+            <div class="card-header"><span>📍</span><h3>Incident Details</h3></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Location</label>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px" id="location-btns"></div>
+                <input type="text" class="form-control" id="location-name" placeholder="Or type location name..." value="">
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Latitude</label>
+                  <input type="number" class="form-control" id="lat" step="0.0001" value="24.7136">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Longitude</label>
+                  <input type="number" class="form-control" id="lng" step="0.0001" value="46.6753">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Traffic Density</label>
+                  <select class="form-control" id="traffic-density">
+                    <option>Low</option><option selected>Moderate</option><option>High</option><option>Congested</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Weather</label>
+                  <select class="form-control" id="weather">
+                    <option selected>Clear</option><option>Cloudy</option><option>Rain</option><option>Sandstorm</option><option>Fog</option><option>Extreme Heat</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row-3">
+                <div class="form-group">
+                  <label class="form-label">Vehicles Affected</label>
+                  <input type="number" class="form-control" id="vehicles" min="0" value="3">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">People Affected</label>
+                  <input type="number" class="form-control" id="people" min="0" value="5">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Time</label>
+                  <input type="time" class="form-control" id="inc-time">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Description (Optional)</label>
+                <textarea class="form-control" id="description" rows="3" placeholder="Additional incident details..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-primary btn-lg btn-full" id="btn-analyze" onclick="submitAndAnalyze()">
+            🤖 Run Multi-Agent Analysis
+          </button>
+          <div id="submit-status" class="text-sm text-muted mt-8"></div>
+        </div>
+
+        <!-- Map -->
+        <div>
+          <div class="card mb-16">
+            <div class="card-header"><span>🗺️</span><h3>Location Preview</h3></div>
+            <div class="card-body" style="padding:0"><div id="sim-map"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span>📋</span><h3>Quick Fill Presets</h3></div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <button class="btn btn-ghost btn-sm btn-full" onclick="fillPreset('accident')">💥 Major Traffic Accident</button>
+                <button class="btn btn-ghost btn-sm btn-full" onclick="fillPreset('fire')">🔥 Commercial Building Fire</button>
+                <button class="btn btn-ghost btn-sm btn-full" onclick="fillPreset('spill')">⛽ Fuel Tanker Spill</button>
+                <button class="btn btn-ghost btn-sm btn-full" onclick="fillPreset('med')">🚑 Mass Casualty Event</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/static/js/api.js"></script>
+<script src="/static/js/app.js"></script>
+<script src="/static/js/map.js"></script>
+<script>
+let selectedType = 'Traffic Accident';
+let selectedSev = 'Medium';
+let simMarker = null;
+
+const PRESETS = {
+  accident: { type:'Traffic Accident', sev:'High', lat:24.7114, lng:46.6744, loc:'King Fahd Road - Kingdom Centre', td:'Congested', weather:'Fog', v:5, p:8, desc:'Multi-vehicle collision at major intersection during morning rush hour.' },
+  fire:     { type:'Fire Incident', sev:'Critical', lat:24.6906, lng:46.6841, loc:'Olaya Street - Al Faisaliah District', td:'High', weather:'Extreme Heat', v:2, p:3, desc:'Commercial building fire with visible smoke. Adjacent offices and road access require coordinated evacuation and traffic control.' },
+  spill:    { type:'Fuel Spill', sev:'High', lat:24.7114, lng:46.6744, loc:'King Fahd Road - Kingdom Centre', td:'Congested', weather:'Extreme Heat', v:4, p:12, desc:'Fuel tanker collision caused a diesel spill on a major Riyadh corridor. Ignition sources must be isolated and traffic rerouted.' },
+  med:      { type:'Medical Emergency', sev:'High', lat:24.7636, lng:46.6406, loc:'King Abdullah Financial District', td:'High', weather:'Extreme Heat', v:0, p:15, desc:'Heat-related medical emergency in a crowded public area. Multiple patients require fast ambulance access and crowd control.' },
+};
+
+function selectType(btn) {
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedType = btn.dataset.type;
+}
+
+function selectSev(btn) {
+  document.querySelectorAll('.sev-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedSev = btn.dataset.sev;
+}
+
+function fillPreset(key) {
+  const p = PRESETS[key];
+  // Set type
+  document.querySelectorAll('.type-btn').forEach(b => { b.classList.toggle('selected', b.dataset.type === p.type); });
+  selectedType = p.type;
+  // Set sev
+  document.querySelectorAll('.sev-btn').forEach(b => { b.classList.toggle('selected', b.dataset.sev === p.sev); });
+  selectedSev = p.sev;
+  document.getElementById('lat').value = p.lat;
+  document.getElementById('lng').value = p.lng;
+  document.getElementById('location-name').value = p.loc;
+  document.getElementById('traffic-density').value = p.td;
+  document.getElementById('weather').value = p.weather;
+  document.getElementById('vehicles').value = p.v;
+  document.getElementById('people').value = p.p;
+  document.getElementById('description').value = p.desc;
+  updateSimMarker(p.lat, p.lng, p.type);
+  showToast(`Preset filled: ${p.type}`, 'info');
+}
+
+function updateSimMarker(lat, lng, type) {
+  if (simMarker && mapInstance) mapInstance.removeLayer(simMarker);
+  const emoji = { 'Traffic Accident':'💥','Fire Incident':'🔥','Road Blockage':'🚧','Fuel Spill':'⛽','Medical Emergency':'🚑' }[type] || '🚨';
+  const icon = L.divIcon({ className:'', html:`<div style="width:38px;height:38px;background:rgba(239,68,68,0.2);border:2px solid #ef4444;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 12px #ef444466">${emoji}</div>`, iconSize:[38,38], iconAnchor:[19,19] });
+  simMarker = L.marker([lat, lng], { icon }).addTo(mapInstance);
+  mapInstance.flyTo([lat, lng], 14);
+}
+
+async function submitAndAnalyze() {
+  if (!selectedType) { showToast('Please select an incident type', 'warn'); return; }
+  if (!selectedSev) { showToast('Please select a severity level', 'warn'); return; }
+
+  const btn = document.getElementById('btn-analyze');
+  const status = document.getElementById('submit-status');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Creating incident...';
+
+  const payload = {
+    type: selectedType, severity: selectedSev,
+    location_name: document.getElementById('location-name').value || 'Unknown Location',
+    latitude: parseFloat(document.getElementById('lat').value) || 24.7136,
+    longitude: parseFloat(document.getElementById('lng').value) || 46.6753,
+    traffic_density: document.getElementById('traffic-density').value,
+    weather: document.getElementById('weather').value,
+    affected_vehicles: parseInt(document.getElementById('vehicles').value) || 0,
+    affected_people: parseInt(document.getElementById('people').value) || 0,
+    time: document.getElementById('inc-time').value,
+    description: document.getElementById('description').value,
+  };
+
+  try {
+    status.textContent = '⏳ Creating incident...';
+    const inc = await api.createIncident(payload);
+    showToast(`Incident ${inc.id} created`, 'success');
+
+    status.textContent = '🤖 Running agent analysis...';
+    btn.innerHTML = '<div class="spinner"></div> Analyzing...';
+    await api.analyzeIncident(inc.id);
+
+    status.textContent = '🎯 Coordinator generating final plan...';
+    await api.coordinateIncident(inc.id);
+
+    showToast('Analysis complete! Redirecting...', 'success');
+    setTimeout(() => { window.location = `/agents.html?id=${inc.id}`; }, 1000);
+  } catch(e) {
+    showToast('Error: ' + e.message, 'error');
+    status.textContent = '❌ Failed — is the backend running?';
+    btn.disabled = false;
+    btn.innerHTML = '🤖 Run Multi-Agent Analysis';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  initMap('sim-map', 24.7136, 46.6753, 12);
+  const now = new Date();
+  document.getElementById('inc-time').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+  // Default selections
+  document.querySelector('[data-type="Traffic Accident"]')?.classList.add('selected');
+  document.querySelector('[data-sev="Medium"]')?.classList.add('selected');
+
+  // Load location presets
+  try {
+    const city = await api.getCityData();
+    const container = document.getElementById('location-btns');
+    (city.locations || []).slice(0, 6).forEach(loc => {
+      const btn = document.createElement('button');
+      btn.className = 'location-btn';
+      btn.textContent = loc.name;
+      btn.onclick = () => {
+        document.querySelectorAll('.location-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        document.getElementById('lat').value = loc.lat;
+        document.getElementById('lng').value = loc.lng;
+        document.getElementById('location-name').value = loc.name;
+        updateSimMarker(loc.lat, loc.lng, selectedType);
+      };
+      container.appendChild(btn);
+    });
+  } catch(_) {}
+
+  // Map click to set coords
+  mapInstance.on('click', (e) => {
+    document.getElementById('lat').value = e.latlng.lat.toFixed(4);
+    document.getElementById('lng').value = e.latlng.lng.toFixed(4);
+    updateSimMarker(e.latlng.lat, e.latlng.lng, selectedType);
+  });
+
+  updateSimMarker(24.7136, 46.6753, 'Traffic Accident');
+});
+</script>
+</body>
+</html>

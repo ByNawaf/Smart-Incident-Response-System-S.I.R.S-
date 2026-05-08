@@ -1,0 +1,53 @@
+# ─── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.pyc
+*.pyo
+*.pyd
+
+# ─── Virtual Environments ──────────────────────────────────────────────────────
+venv/
+.venv/
+env/
+.env/
+ENV/
+env.bak/
+venv.bak/
+
+# ─── Environment / Secrets ────────────────────────────────────────────────────
+.env
+.env.*
+
+
+# ─── S.I.R.S Sensitive Data ───────────────────────────────────────────────────
+# API keys and personal settings — never commit these
+backend/data/settings.json
+
+# Incident log (can grow very large; regenerated at runtime)
+backend/data/incidents.json
+
+# ─── IDE & Editor ─────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.DS_Store
+Thumbs.db
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ─── OS ───────────────────────────────────────────────────────────────────────
+desktop.ini
+.DS_Store

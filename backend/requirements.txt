@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+pydantic>=2.10,<3
+python-multipart
+httpx
+python-dotenv
+aiofiles
+requests
+langgraph

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agents Analysis — S.I.R.S</title>
+<link rel="stylesheet" href="/static/css/main.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  #agents-map { height: 320px; }
+  .workflow-diagram { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px; padding:20px; background:var(--bg-primary); border-radius:var(--radius); margin-bottom:20px; }
+  .wf-node { display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .wf-box { padding:8px 14px; border-radius:8px; font-size:12px; font-weight:700; border:1px solid; text-align:center; min-width:90px; }
+  .wf-box.incident { background:rgba(239,68,68,0.15); border-color:rgba(239,68,68,0.4); color:#f87171; }
+  .wf-box.agent { background:rgba(59,130,246,0.1); border-color:rgba(59,130,246,0.3); color:#60a5fa; }
+  .wf-box.coordinator { background:rgba(249,115,22,0.15); border-color:rgba(249,115,22,0.4); color:#fb923c; }
+  .wf-box.output { background:rgba(16,185,129,0.1); border-color:rgba(16,185,129,0.3); color:#34d399; }
+  .wf-arrow { font-size:18px; color:var(--text-muted); }
+  .wf-label { font-size:10px; color:var(--text-muted); }
+  .no-incident { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 24px; text-align:center; color:var(--text-muted); }
+  .no-incident .icon { font-size:56px; margin-bottom:16px; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-title">S.I.R.S</div>
+      <div class="logo-sub">Smart Incident Response</div>
+      <div class="sidebar-status"><span class="status-dot"></span> System Operational</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Navigation</div>
+      <a href="/command-center.html" class="nav-item"><span class="nav-icon">🎛️</span> Command Center</a>
+      <a href="/index.html" class="nav-item"><span class="nav-icon">🏠</span> Home</a>
+      <a href="/dashboard.html" class="nav-item"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="/simulation.html" class="nav-item"><span class="nav-icon">🚀</span> Simulation</a>
+      <a href="/agents.html" class="nav-item active"><span class="nav-icon">🤖</span> Agents Analysis</a>
+      <a href="/reports.html" class="nav-item"><span class="nav-icon">📋</span> Reports</a>
+      <div class="nav-section-label">More</div>
+      <a href="/judges.html" class="nav-item"><span class="nav-icon">🎬</span> Judges View</a>
+      <a href="/settings.html" class="nav-item"><span class="nav-icon">⚙️</span> Settings</a>
+    </nav>
+    <div class="sidebar-footer">S.I.R.S <span class="ver">v1.6</span></div>
+  </div>
+
+  <div class="main-content">
+    <header class="header">
+      <div class="header-title">Agents Analysis View</div>
+      <div class="header-spacer"></div>
+      <div id="inc-id-badge" class="header-time" style="display:none"></div>
+      <div class="header-time" id="live-clock">00:00:00</div>
+    </header>
+
+    <div class="page" id="page-content">
+      <!-- Incident selector -->
+      <div id="incident-selector" class="card mb-16">
+        <div class="card-header"><span>📂</span><h3>Select Incident</h3></div>
+        <div class="card-body">
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <select class="form-control" id="inc-select" style="flex:1;max-width:400px">
+              <option value="">— Choose an incident —</option>
+            </select>
+            <button class="btn btn-primary" onclick="loadSelected()">Load Analysis</button>
+            <a href="/simulation.html" class="btn btn-ghost">+ New Incident</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Workflow -->
+      <div class="workflow-diagram">
+        <div class="wf-node"><div class="wf-box incident">📹 Camera Feed</div><div class="wf-label">Input</div></div>
+        <div class="wf-arrow">→</div>
+        <div class="wf-node"><div class="wf-box agent">📹 Vision</div><div class="wf-label">Agent 1</div></div>
+        <div class="wf-arrow">→</div>
+        <div class="wf-node"><div class="wf-box agent">🚦 Traffic</div><div class="wf-label">Agent 2</div></div>
+        <div class="wf-arrow">→</div>
+        <div class="wf-node"><div class="wf-box agent">🚑 Emergency</div><div class="wf-label">Agent 3</div></div>
+        <div class="wf-arrow">→</div>
+        <div class="wf-node"><div class="wf-box agent">🌿 Environment</div><div class="wf-label">Agent 4</div></div>
+        <div class="wf-arrow">→</div>
+        <div class="wf-node"><div class="wf-box agent">🔬 Analysis</div><div class="wf-label">Agent 5</div></div>
+        <div class="wf-arrow">→</div>
+        <div class="wf-node"><div class="wf-box coordinator">🎯 Coordinator</div><div class="wf-label">Agent 6</div></div>
+        <div class="wf-arrow">→</div>
+        <div class="wf-node"><div class="wf-box output">✅ Response Plan</div><div class="wf-label">Output</div></div>
+      </div>
+
+      <div id="main-view">
+        <div class="no-incident">
+          <div class="icon">🤖</div>
+          <h3>No Incident Loaded</h3>
+          <p style="margin:8px 0 20px">Select an incident above or create a new simulation.</p>
+          <a href="/simulation.html" class="btn btn-primary">Create New Incident</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/static/js/api.js"></script>
+<script src="/static/js/app.js"></script>
+<script src="/static/js/map.js"></script>
+<script src="/static/js/agents.js"></script>
+<script src="/static/js/report.js"></script>
+<script src="/static/js/vehicle_animation.js"></script>
+<script>
+let currentIncident = null;
+let currentSceneData = null;
+
+async function populateSelector() {
+  try {
+    const incidents = await api.getIncidents();
+    const sel = document.getElementById('inc-select');
+    incidents.slice().reverse().forEach(i => {
+      const opt = document.createElement('option');
+      opt.value = i.id;
+      opt.textContent = `${i.id} — ${i.type} (${i.severity}) — ${i.status}`;
+      sel.appendChild(opt);
+    });
+    // Auto-select from URL param
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    if (id) {
+      sel.value = id;
+      loadIncident(id);
+    } else {
+      const latest = incidents.slice().reverse().find(i => i.id === 'DEMO-RIYADH-LIVE' || i.final_decision);
+      if (latest) {
+        sel.value = latest.id;
+        loadIncident(latest.id);
+      }
+    }
+  } catch(e) { showToast('Cannot load incidents', 'error'); }
+}
+
+async function loadSelected() {
+  const id = document.getElementById('inc-select').value;
+  if (!id) { showToast('Select an incident first', 'warn'); return; }
+  await loadIncident(id);
+}
+
+async function loadIncident(id) {
+  try {
+    const data = await api.getIncident(id);
+    currentIncident = data;
+    if (!data.agent_responses) {
+      showToast('Running analysis...', 'info');
+      await api.analyzeIncident(id);
+      await api.coordinateIncident(id);
+      const updated = await api.getIncident(id);
+      currentIncident = updated;
+    }
+    renderAnalysisView(currentIncident);
+    document.getElementById('inc-id-badge').textContent = id;
+    document.getElementById('inc-id-badge').style.display = '';
+  } catch(e) {
+    showToast('Error loading incident: ' + e.message, 'error');
+  }
+}
+
+function renderAnalysisView(inc) {
+  const agents = inc.agent_responses || [];
+  const fd = inc.final_decision || {};
+  const view = document.getElementById('main-view');
+
+  // Incident info bar
+  const infoBar = `
+    <div class="card mb-16">
+      <div class="card-body" style="padding:14px 20px">
+        <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+          <div><span class="text-xs text-muted">TYPE</span><div class="font-bold">${inc.type}</div></div>
+          <div><span class="text-xs text-muted">SEVERITY</span><div class="${severityColor(inc.severity)} font-bold">${inc.severity}</div></div>
+          <div><span class="text-xs text-muted">LOCATION</span><div class="font-bold">${inc.location_name}</div></div>
+          <div><span class="text-xs text-muted">WEATHER</span><div>${inc.weather}</div></div>
+          <div><span class="text-xs text-muted">TRAFFIC</span><div>${inc.traffic_density}</div></div>
+          <div><span class="text-xs text-muted">PEOPLE</span><div>${inc.affected_people}</div></div>
+          <div><span class="text-xs text-muted">VEHICLES</span><div>${inc.affected_vehicles}</div></div>
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <button class="btn btn-primary btn-sm" onclick="window.location='/reports.html?id=${inc.id}'">📋 View Report</button>
+            <button class="btn btn-ghost btn-sm" onclick="rerunAnalysis('${inc.id}')">↺ Re-Analyze</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  // Map section
+  const mapSection = `
+    <div class="grid-2-1" style="margin-bottom:20px">
+      <div class="card">
+        <div class="card-header"><span>🗺️</span><h3>Incident Map & Live Replay</h3></div>
+        <div class="card-body" style="padding:0"><div id="agents-map"></div></div>
+        <div class="card-body" style="border-top:1px solid var(--border)">
+          <div class="sim-btn-row">
+            <button class="sim-btn sim-btn-before" onclick="replayAgentsBefore()">🔴 Before Optimization</button>
+            <button class="sim-btn sim-btn-after" onclick="replayAgentsAfter()">⚡ Run Optimized Response</button>
+            <button class="sim-btn sim-btn-reset" onclick="resetAgentsReplay()">↺ Reset Map</button>
+          </div>
+          <div id="agents-replay-status" class="text-sm text-muted">Replay uses the exact same agent outputs, routes, fleet, and ETA data stored for this incident.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span>📡</span><h3>Agent Communication</h3></div>
+        <div class="card-body" style="max-height:360px;overflow-y:auto">
+          <div class="timeline" id="agents-timeline"></div>
+        </div>
+      </div>
+    </div>`;
+
+  // Agent cards
+  const agentsSection = `
+    <div class="section-title">🤖 Agent Analysis Results</div>
+    <div class="agents-grid mb-16" id="agents-grid"></div>
+    <div id="ev-eta-panel" style="margin-bottom:20px"></div>`;
+
+  // Coordinator
+  const coordSection = `
+    <div class="section-title">🎯 Coordinator Agent — Final Response Plan</div>
+    <div id="coord-decision" class="mb-16"></div>`;
+
+  // Charts removed: this page now focuses on explainable agent outputs and decisions.
+  const chartsSection = '';
+
+  view.innerHTML = infoBar + mapSection + agentsSection + coordSection + chartsSection;
+
+  // Init map
+  setTimeout(() => {
+    const map = initMap('agents-map', inc.latitude, inc.longitude, 14);
+    if (window.VehicleAnimation) { VehicleAnimation.init(map); currentSceneData = VehicleAnimation.buildSceneData(inc, agents); }
+    if (agents.length) renderIncidentOnMap(inc, agents);
+    renderAllAgents(agents, 'agents-grid');
+    // Render EV ETA panel
+    if (agents.length) renderEvEtaPanel(agents, 'ev-eta-panel');
+    const commLog = [
+      ...(fd.agent_communication_log || []),
+      ...(fd.ollama_agent_communication_log || []).map(x => ({...x, agent: (x.agent || 'Qwen / Ollama')}))
+    ];
+    if (commLog.length) {
+      renderTimeline(commLog.map((c, idx) => ({
+        time: 'A+' + String(idx + 1).padStart(2, '0'),
+        actor: c.agent || 'Agent',
+        event: (c.message || '') + (c.decision_impact ? ' — Impact: ' + c.decision_impact : ''),
+        status: 'done'
+      })), 'agents-timeline');
+    } else if (fd.response_timeline) renderTimeline(fd.response_timeline, 'agents-timeline');
+    if (Object.keys(fd).length) renderCoordinatorDecision(fd, 'coord-decision');
+    // Charts removed from the site. Agent confidence is shown in cards above.
+  }, 100);
+}
+
+function replayAgentsBefore() {
+  if (!currentSceneData || !window.VehicleAnimation) { showToast('No replay data loaded', 'warn'); return; }
+  document.getElementById('agents-replay-status').textContent = '🔴 Before: congestion and delayed emergency response are being replayed from stored agent data.';
+  VehicleAnimation.showBeforeScene(currentSceneData);
+}
+
+function replayAgentsAfter() {
+  if (!currentSceneData || !window.VehicleAnimation) { showToast('No replay data loaded', 'warn'); return; }
+  document.getElementById('agents-replay-status').textContent = '⚡ After: optimized multi-vehicle response is running on the same route geometry.';
+  VehicleAnimation.showAfterScene(currentSceneData, () => {
+    const el = document.getElementById('agents-replay-status');
+    if (el) el.textContent = '✅ Replay complete — all dispatched units arrived according to the selected priority routes.';
+  });
+}
+
+function resetAgentsReplay() {
+  if (window.VehicleAnimation) VehicleAnimation.reset();
+  if (currentIncident) {
+    initMap('agents-map', currentIncident.latitude, currentIncident.longitude, 14);
+    setTimeout(() => {
+      const agents = currentIncident.agent_responses || [];
+      if (window.VehicleAnimation) { VehicleAnimation.init(mapInstance); currentSceneData = VehicleAnimation.buildSceneData(currentIncident, agents); }
+      renderIncidentOnMap(currentIncident, agents);
+    }, 100);
+  }
+}
+
+async function rerunAnalysis(id) {
+  showToast('Re-running analysis...', 'info');
+  try {
+    await api.analyzeIncident(id);
+    await api.coordinateIncident(id);
+    await loadIncident(id);
+    showToast('Re-analysis complete', 'success');
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+document.addEventListener('DOMContentLoaded', populateSelector);
+</script>
+</body>
+</html>

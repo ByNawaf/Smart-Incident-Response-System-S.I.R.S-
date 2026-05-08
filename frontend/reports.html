@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reports — S.I.R.S</title>
+<link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-title">S.I.R.S</div>
+      <div class="logo-sub">Smart Incident Response</div>
+      <div class="sidebar-status"><span class="status-dot"></span> System Operational</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Navigation</div>
+      <a href="/command-center.html" class="nav-item"><span class="nav-icon">🎛️</span> Command Center</a>
+      <a href="/index.html" class="nav-item"><span class="nav-icon">🏠</span> Home</a>
+      <a href="/dashboard.html" class="nav-item"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="/simulation.html" class="nav-item"><span class="nav-icon">🚀</span> Simulation</a>
+      <a href="/agents.html" class="nav-item"><span class="nav-icon">🤖</span> Agents Analysis</a>
+      <a href="/reports.html" class="nav-item active"><span class="nav-icon">📋</span> Reports</a>
+      <div class="nav-section-label">More</div>
+      <a href="/judges.html" class="nav-item"><span class="nav-icon">🎬</span> Judges View</a>
+      <a href="/settings.html" class="nav-item"><span class="nav-icon">⚙️</span> Settings</a>
+    </nav>
+    <div class="sidebar-footer">S.I.R.S <span class="ver">v1.6</span></div>
+  </div>
+
+  <div class="main-content">
+    <header class="header">
+      <div class="header-title">Incident Reports</div>
+      <div class="header-spacer"></div>
+      <div class="header-time" id="live-clock">00:00:00</div>
+    </header>
+
+    <div class="page">
+      <div class="page-header">
+        <h1>Reports &amp; Analysis</h1>
+        <p>View, print, and download professional incident response reports</p>
+      </div>
+
+      <!-- Incident selector -->
+      <div class="card mb-16">
+        <div class="card-header"><span>📂</span><h3>Select Report</h3></div>
+        <div class="card-body">
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <select class="form-control" id="rep-select" style="flex:1;max-width:400px">
+              <option value="">— Choose an incident report —</option>
+            </select>
+            <button class="btn btn-primary" onclick="loadReport()">📋 Load Report</button>
+            <button class="btn btn-ghost" id="btn-print" onclick="doPrint()" style="display:none">🖨️ Print / PDF</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Incidents list -->
+      <div class="card mb-16">
+        <div class="card-header"><span>📁</span><h3>All Incidents</h3>
+          <span class="card-badge" style="background:rgba(6,182,212,0.15);color:var(--cyan)" id="inc-count">0 incidents</span>
+        </div>
+        <div class="card-body" style="padding:0">
+          <table class="data-table">
+            <thead><tr><th>ID</th><th>Type</th><th>Severity</th><th>Location</th><th>Created</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="reports-table-body">
+              <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px">No incidents recorded yet</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Report viewer -->
+      <div class="card" id="report-viewer-card" style="display:none">
+        <div class="card-header">
+          <span>📄</span><h3>Report Preview</h3>
+          <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="doPrint()">🖨️ Print / Export PDF</button>
+        </div>
+        <div class="card-body" id="report-viewer-body"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="/static/js/api.js"></script>
+<script src="/static/js/app.js"></script>
+<script src="/static/js/report.js"></script>
+<script>
+let currentReport = null;
+let pendingDeleteId = null;
+
+async function loadIncidentsList() {
+  try {
+    const incidents = await api.getIncidents();
+    document.getElementById('inc-count').textContent = `${incidents.length} incident${incidents.length !== 1 ? 's' : ''}`;
+
+    const sel = document.getElementById('rep-select');
+    const tbody = document.getElementById('reports-table-body');
+
+    if (!incidents.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px">No incidents yet — <a href="/simulation.html" style="color:var(--cyan)">create one</a></td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = '';
+    sel.innerHTML = '<option value="">— Choose an incident report —</option>';
+
+    incidents.slice().reverse().forEach(inc => {
+      // Selector option
+      const opt = document.createElement('option');
+      opt.value = inc.id;
+      opt.textContent = `${inc.id} — ${inc.type} (${inc.severity})`;
+      sel.appendChild(opt);
+
+      // Table row
+      const tr = document.createElement('tr');
+      const hasReport = !!inc.final_decision;
+      tr.innerHTML = `
+        <td class="font-mono text-xs text-cyan">${inc.id}</td>
+        <td>${inc.type}</td>
+        <td><span class="${severityColor(inc.severity)} font-bold" style="font-size:11px">${inc.severity}</span></td>
+        <td style="font-size:12px">${inc.location_name}</td>
+        <td style="font-size:11px;color:var(--text-muted)">${formatDate(inc.created_at)}</td>
+        <td><span style="font-size:11px;color:${inc.status==='Resolved'?'var(--green)':'var(--orange)'}">${inc.status}</span></td>
+        <td style="display:flex;gap:6px">
+          ${hasReport ? `<button class="btn btn-primary btn-sm" onclick="loadReportById('${inc.id}')">📋 Report</button>` : `<button class="btn btn-ghost btn-sm" onclick="runAnalysis('${inc.id}')">▶ Analyze</button>`}
+          <button class="btn btn-ghost btn-sm" onclick="deleteInc('${inc.id}')">🗑️</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+
+    // Auto-load from URL param
+    const id = new URLSearchParams(window.location.search).get('id');
+    if (id) { sel.value = id; await loadReportById(id); }
+  } catch(e) {
+    showToast('Cannot load incidents: ' + e.message, 'error');
+  }
+}
+
+async function loadReport() {
+  const id = document.getElementById('rep-select').value;
+  if (!id) { showToast('Select an incident first', 'warn'); return; }
+  await loadReportById(id);
+}
+
+async function loadReportById(id) {
+  try {
+    showToast('Loading report...', 'info');
+    const report = await api.getReport(id);
+    currentReport = report;
+
+    const card = document.getElementById('report-viewer-card');
+    card.style.display = '';
+    document.getElementById('btn-print').style.display = '';
+    renderInlineReport(report, 'report-viewer-body');
+    card.scrollIntoView({ behavior: 'smooth' });
+    showToast('Report loaded', 'success');
+  } catch(e) {
+    showToast('Error loading report: ' + e.message, 'error');
+  }
+}
+
+async function runAnalysis(id) {
+  showToast('Running analysis...', 'info');
+  try {
+    await api.analyzeIncident(id);
+    await api.coordinateIncident(id);
+    showToast('Analysis complete', 'success');
+    await loadIncidentsList();
+    await loadReportById(id);
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+async function deleteInc(id) {
+  if (pendingDeleteId !== id) {
+    pendingDeleteId = id;
+    showToast(`Click delete again to confirm deleting ${id}`, 'warn');
+    setTimeout(() => { if (pendingDeleteId === id) pendingDeleteId = null; }, 5000);
+    return;
+  }
+  try {
+    await api.deleteIncident(id);
+    pendingDeleteId = null;
+    showToast('Deleted', 'success');
+    await loadIncidentsList();
+  } catch(e) { showToast('Error deleting: ' + e.message, 'error'); }
+}
+
+function doPrint() {
+  if (currentReport) printReport(currentReport);
+  else showToast('No report loaded', 'warn');
+}
+
+document.addEventListener('DOMContentLoaded', loadIncidentsList);
+</script>
+</body>
+</html>

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — S.I.R.S</title>
+<link rel="stylesheet" href="/static/css/main.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  #map { height: 420px; }
+  .incident-row { cursor: pointer; transition: background 0.15s; }
+  .incident-row:hover td { background: rgba(99,179,237,0.06) !important; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-title">S.I.R.S</div>
+      <div class="logo-sub">Smart Incident Response</div>
+      <div class="sidebar-status"><span class="status-dot"></span> System Operational</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Navigation</div>
+      <a href="/command-center.html" class="nav-item"><span class="nav-icon">🎛️</span> Command Center</a>
+      <a href="/index.html" class="nav-item"><span class="nav-icon">🏠</span> Home</a>
+      <a href="/dashboard.html" class="nav-item active"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="/simulation.html" class="nav-item"><span class="nav-icon">🚀</span> Simulation</a>
+      <a href="/agents.html" class="nav-item"><span class="nav-icon">🤖</span> Agents Analysis</a>
+      <a href="/reports.html" class="nav-item"><span class="nav-icon">📋</span> Reports</a>
+      <div class="nav-section-label">More</div>
+      <a href="/judges.html" class="nav-item"><span class="nav-icon">🎬</span> Judges View</a>
+      <a href="/settings.html" class="nav-item"><span class="nav-icon">⚙️</span> Settings</a>
+    </nav>
+    <div class="sidebar-footer">S.I.R.S <span class="ver">v1.6</span> · Multi-Agent System</div>
+  </div>
+
+  <!-- Main -->
+  <div class="main-content">
+    <header class="header">
+      <div>
+        <div class="header-title">Control Room Dashboard</div>
+        <div class="header-sub">Riyadh Operations Centre</div>
+      </div>
+      <div class="header-spacer"></div>
+      <div class="header-time" id="live-clock">00:00:00</div>
+      <div class="header-alert ok" id="sys-status">● All Systems Online</div>
+    </header>
+
+    <div class="page">
+      <!-- Stats -->
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card" style="--accent:var(--red)"><div class="stat-icon">🚨</div><div class="stat-value" id="s-active">—</div><div class="stat-label">Active Incidents</div></div>
+        <div class="stat-card" style="--accent:var(--cyan)"><div class="stat-icon">⚡</div><div class="stat-value" id="s-resp">—</div><div class="stat-label">Avg Response (min)</div></div>
+        <div class="stat-card" style="--accent:var(--orange)"><div class="stat-icon">🚦</div><div class="stat-value" id="s-traffic">—</div><div class="stat-label">Traffic Impact</div></div>
+        <div class="stat-card" style="--accent:var(--green)"><div class="stat-icon">🌿</div><div class="stat-value" id="s-env">—</div><div class="stat-label">Env Risk Level</div></div>
+        <div class="stat-card" style="--accent:var(--blue)"><div class="stat-icon">🤖</div><div class="stat-value">5</div><div class="stat-label">AI Agents Online</div></div>
+        <div class="stat-card" style="--accent:var(--purple)"><div class="stat-icon">📡</div><div class="stat-value" id="s-total">—</div><div class="stat-label">Total Incidents</div></div>
+      </div>
+
+      <!-- Demo Button Row -->
+      <div style="margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+        <button class="btn-demo" id="btn-run-demo" onclick="runLiveDemo()">
+          📹 Run Camera-Triggered Incident Demo
+        </button>
+        <a href="/simulation.html" class="btn btn-primary">+ New Incident</a>
+        <button class="btn btn-ghost" onclick="refreshDashboard()">↺ Refresh</button>
+        <div id="demo-status" class="text-sm text-muted"></div>
+      </div>
+
+      <!-- Map + Incidents -->
+      <div class="grid-2-1" style="grid-template-columns:3fr 2fr;margin-bottom:20px">
+        <div class="card">
+          <div class="card-header">
+            <span>🗺️</span><h3>Live City Map</h3>
+            <span class="card-badge" style="background:rgba(6,182,212,0.15);color:var(--cyan)">LIVE</span>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div id="map"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span>🚨</span><h3>Active Incidents</h3></div>
+          <div class="card-body" style="padding:0">
+            <table class="data-table" id="incidents-table">
+              <thead><tr><th>ID</th><th>Type</th><th>Sev</th><th>Status</th></tr></thead>
+              <tbody id="incidents-tbody"><tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:24px">No incidents yet</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ LIVE SIMULATION CONTROL PANEL ══ -->
+      <div class="sim-control-panel mb-16" id="sim-control-panel" style="margin-bottom:20px">
+        <div class="sim-control-header">
+          <span style="font-size:18px">🎮</span>
+          <h3>Live Response Control</h3>
+          <span style="margin-left:auto;font-size:11px;color:var(--text-muted)">Camera-triggered dispatch and vehicle movement</span>
+        </div>
+        <div class="sim-control-body">
+          <div style="display:grid;grid-template-columns:1fr 2fr;gap:20px">
+
+            <!-- Left: ETA + Status -->
+            <div>
+              <div class="sim-eta-display">
+                <div class="sim-eta-number" id="sim-eta-num">—</div>
+                <div class="sim-eta-label">ETA (minutes)</div>
+              </div>
+              <div class="sim-ev-status" id="sim-ev-status">🟡 Idle — No active simulation</div>
+              <div class="sim-phase-bar">
+                <div class="sim-phase-seg" id="phase-before">🔴 Before</div>
+                <div class="sim-phase-seg" id="phase-after">⚡ After</div>
+                <div class="sim-phase-seg" id="phase-arrived">✅ Arrived</div>
+              </div>
+            </div>
+
+            <!-- Right: Controls + Status pills -->
+            <div>
+              <div class="sim-btn-row">
+                <button class="sim-btn sim-btn-before" id="sbtn-before" onclick="simShowBefore()" disabled>
+                  🔴 Before Optimization
+                </button>
+                <button class="sim-btn sim-btn-after" id="sbtn-after" onclick="simShowAfter()" disabled>
+                  ⚡ After Optimization
+                </button>
+              </div>
+              <div class="sim-btn-row">
+                <button class="sim-btn sim-btn-pause" id="sbtn-pause" onclick="simTogglePause()" disabled>
+                  ⏸ Pause
+                </button>
+                <button class="sim-btn sim-btn-reset" id="sbtn-reset" onclick="simReset()" disabled>
+                  ↺ Reset
+                </button>
+                <button class="sim-btn sim-btn-replay" id="sbtn-replay" onclick="simReplay()" disabled>
+                  🔁 Replay
+                </button>
+              </div>
+
+              <!-- Status pills -->
+              <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px" id="sim-pills-row">
+                <span class="va-status-pill va-pill-idle" id="pill-ev">🚑 Fleet Moving</span>
+                <span class="va-status-pill va-pill-idle" id="pill-civ">🚗 Traffic Rerouted</span>
+                <span class="va-status-pill va-pill-idle" id="pill-corridor">⚡ Corridor Active</span>
+                <span class="va-status-pill va-pill-idle" id="pill-signal">🚦 Signal Priority</span>
+                <span class="va-status-pill va-pill-idle" id="pill-hazard" style="display:none">⛽ Hazard Zone</span>
+              </div>
+
+              <!-- Primary progress bar -->
+              <div style="margin-top:12px">
+                <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:4px">
+                  <span>Primary Unit Progress</span>
+                  <span id="sim-progress-pct">0%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" id="sim-progress-fill" style="width:0%"></div>
+                </div>
+              </div>
+
+              <!-- Fleet cards -->
+              <div id="fleet-cards" style="margin-top:12px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Operational Insight Row (charts removed) -->
+      <div class="grid-3" style="grid-template-columns:1fr 1fr 1fr">
+        <div class="card"><div class="card-header"><span>📹</span><h3>Camera Triggered Flow</h3></div><div class="card-body text-sm text-secondary">Use the Command Center to start incidents from street cameras instead of manual mock inputs.</div></div>
+        <div class="card"><div class="card-header"><span>🛣️</span><h3>OSRM-Based ETA</h3></div><div class="card-body text-sm text-secondary">ETA is calculated from route distance/duration, incident severity, traffic factor, and emergency priority corridor.</div></div>
+        <div class="card"><div class="card-header"><span>🤖</span><h3>Agent Decisions</h3></div><div class="card-body text-sm text-secondary">Every dispatched unit is tied to a specific incident reason and agent output.</div></div>
+      </div>
+
+      <!-- Agent Communication Timeline -->
+      <div class="card" id="timeline-card" style="display:none;margin-bottom:20px">
+        <div class="card-header"><span>📡</span><h3>Agent Communication Timeline</h3></div>
+        <div class="card-body"><div class="timeline" id="timeline-container"></div></div>
+      </div>
+
+      <!-- EV ETA Optimization Panel -->
+      <div id="ev-eta-container"></div>
+
+      <!-- Final Decision -->
+      <div id="coordinator-container"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/static/js/api.js"></script>
+<script src="/static/js/app.js"></script>
+<script src="/static/js/map.js"></script>
+<script src="/static/js/agents.js"></script>
+<script src="/static/js/report.js"></script>
+<script src="/static/js/vehicle_animation.js"></script>
+<script>
+let cityData = null;
+let _sceneData = null;   // built after demo runs
+let _demoResult = null;  // full demo response
+
+// ── Sim control helpers ───────────────────────────────────────────────────────
+function simSetButtons(loaded) {
+  ['sbtn-before','sbtn-after','sbtn-pause','sbtn-reset','sbtn-replay'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = !loaded;
+  });
+}
+
+function simUpdatePills(phase) {
+  const setP = (id, active, color) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = 'va-status-pill ' + (active ? color : 'va-pill-idle');
+  };
+  const isBefore = phase === 'before';
+  const isAfter  = phase === 'after';
+  setP('pill-ev',       isAfter,  'va-pill-active');
+  setP('pill-civ',      isAfter,  'va-pill-green');
+  setP('pill-corridor', isAfter,  'va-pill-active');
+  setP('pill-signal',   isAfter,  'va-pill-orange');
+  setP('pill-optim',    isBefore, 'va-pill-red');
+}
+
+function simUpdatePhaseBar(phase) {
+  ['phase-before','phase-after','phase-arrived'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.className = 'sim-phase-seg';
+  });
+  if (phase === 'before')  { const e = document.getElementById('phase-before');  if(e) e.className = 'sim-phase-seg active-before'; }
+  if (phase === 'after')   { const e = document.getElementById('phase-after');   if(e) e.className = 'sim-phase-seg active-after'; }
+  if (phase === 'arrived') { const e = document.getElementById('phase-after');   if(e) e.className = 'sim-phase-seg active-after';
+                             const e2 = document.getElementById('phase-arrived'); if(e2) e2.className = 'sim-phase-seg active-arrived'; }
+}
+
+function simUpdateEta(eta, status, vehicle) {
+  const numEl = document.getElementById('sim-eta-num');
+  const statEl = document.getElementById('sim-ev-status');
+  if (numEl) numEl.textContent = eta !== null && eta !== undefined ? eta : '—';
+  if (statEl) {
+    const label = vehicle ? vehicle.label : 'Primary Unit';
+    if (status === 'Arrived') {
+      statEl.textContent = '✅ ' + label + ' ARRIVED at incident';
+      statEl.style.color = 'var(--green)';
+      statEl.style.borderColor = 'rgba(16,185,129,0.4)';
+      simUpdatePhaseBar('arrived');
+    } else if (status === 'Dispatched') {
+      statEl.textContent = '🚨 ' + label + ' — En route';
+      statEl.style.color = 'var(--orange)';
+      statEl.style.borderColor = 'rgba(249,115,22,0.4)';
+    } else {
+      statEl.textContent = '⚡ ' + label + ' — ' + (status || 'Priority corridor');
+      statEl.style.color = 'var(--cyan)';
+      statEl.style.borderColor = 'rgba(6,182,212,0.3)';
+    }
+  }
+}
+
+function buildFleetCards(fleet, isHazard) {
+  const el = document.getElementById('fleet-cards');
+  if (!el || !fleet || !fleet.length) return;
+  const hazardPill = document.getElementById('pill-hazard');
+  if (hazardPill) hazardPill.style.display = isHazard ? '' : 'none';
+  el.innerHTML = fleet.map((v,i) => {
+    const color = {Ambulance:'#06b6d4','Police Car':'#3b82f6','Fire Truck':'#f97316','Civil Defense':'#8b5cf6'}[v.type]||'#06b6d4';
+    const isStaged = v.hazardStaged;
+    return `<div class="fleet-card ${isStaged?'fleet-hazard':''}" id="fleet-card-${i}">
+      <span style="font-size:18px">${v.emoji}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:11px;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${v.label}</div>
+        <div style="font-size:10px;color:#64748b">${v.unitId} &nbsp;·&nbsp; <span style="color:${color}">${v.priorityEta}min priority</span>${isStaged?' &nbsp;<span class="hazard-badge">⚠️ Staged</span>':''}</div>
+      </div>
+      <div class="fleet-progress"><div class="fleet-progress-fill" id="fleet-prog-${i}" style="width:0%;background:${color}"></div></div>
+      <span style="font-size:10px;color:#475569;min-width:26px;text-align:right" id="fleet-pct-${i}">0%</span>
+    </div>`;
+  }).join('');
+}
+
+function updateFleetCard(idx, progress, vehicle) {
+  const card = document.getElementById('fleet-card-' + idx);
+  const fill = document.getElementById('fleet-prog-' + idx);
+  const pct  = document.getElementById('fleet-pct-' + idx);
+  const p = Math.round(progress * 100);
+  if (fill) fill.style.width = p + '%';
+  if (pct)  pct.textContent  = p + '%';
+  if (card) {
+    card.className = 'fleet-card ' + (p >= 100 ? 'fleet-arrived' : 'fleet-active');
+  }
+}
+
+function simProgressCallback(idx, total) {
+  const pct = Math.round((idx / total) * 100);
+  const fillEl = document.getElementById('sim-progress-fill');
+  const pctEl  = document.getElementById('sim-progress-pct');
+  if (fillEl) fillEl.style.width = pct + '%';
+  if (pctEl)  pctEl.textContent  = pct + '%';
+}
+
+function simShowBefore() {
+  if (!_sceneData) { showToast('Run the demo first to load scene data', 'warn'); return; }
+  VehicleAnimation.reset();
+  clearMap();
+  if (cityData) addCityInfrastructure(cityData);
+  VehicleAnimation.showBeforeScene(_sceneData);
+  simUpdatePhaseBar('before');
+  simUpdatePills('before');
+  const statEl = document.getElementById('sim-ev-status');
+  const pv = (_sceneData.fleet || []).find(v => v.role === 'primary') || (_sceneData.fleet || [])[0] || {};
+  const label = pv.label || pv.type || 'Emergency vehicle';
+  if (statEl) { statEl.textContent = '🔴 BEFORE — ' + label + ' delayed in congestion'; statEl.style.color = 'var(--red)'; statEl.style.borderColor = 'rgba(239,68,68,0.4)'; }
+  document.getElementById('sim-eta-num').textContent = _sceneData.normalEta || '12';
+  document.getElementById('sim-progress-fill').style.width = '0%';
+  document.getElementById('sim-progress-pct').textContent = '0%';
+  showToast('Before Optimization view active — ' + label + ' delayed in traffic', 'warn');
+}
+
+function simShowAfter() {
+  if (!_sceneData) { showToast('Run the demo first to load scene data', 'warn'); return; }
+  VehicleAnimation.reset();
+  clearMap();
+  if (cityData) addCityInfrastructure(cityData);
+  simUpdatePhaseBar('after');
+  simUpdatePills('after');
+  buildFleetCards(_sceneData.fleet, _sceneData.isHazard);
+  VehicleAnimation.showAfterScene(_sceneData, () => {
+    simUpdatePhaseBar('arrived');
+    const saved = (_sceneData.normalEta||12) - (_sceneData.priorityEta||5);
+    const n = (_sceneData.fleet||[]).length;
+    showToast('✅ Fleet arrived! ' + n + ' units deployed. Saved: ' + saved + ' min', 'success');
+  });
+  showToast('⚡ After: ' + (_sceneData.fleet||[]).length + '-vehicle fleet deployed!', 'success');
+}
+
+function simTogglePause() {
+  const btn = document.getElementById('sbtn-pause');
+  if (VehicleAnimation.isPaused()) {
+    VehicleAnimation.resume();
+    if (btn) btn.innerHTML = '⏸ Pause';
+    showToast('Simulation resumed', 'info');
+  } else {
+    VehicleAnimation.pause();
+    if (btn) btn.innerHTML = '▶ Resume';
+    showToast('Simulation paused', 'info');
+  }
+}
+
+function simReset() {
+  VehicleAnimation.reset();
+  clearMap();
+  if (cityData) addCityInfrastructure(cityData);
+  simUpdatePhaseBar('idle');
+  simUpdatePills('idle');
+  const numEl = document.getElementById('sim-eta-num');
+  const statEl = document.getElementById('sim-ev-status');
+  const fillEl = document.getElementById('sim-progress-fill');
+  const pctEl  = document.getElementById('sim-progress-pct');
+  if (numEl) numEl.textContent = '—';
+  if (statEl) { statEl.textContent = '🟡 Idle — No active simulation'; statEl.style.color = 'var(--cyan)'; statEl.style.borderColor = 'rgba(6,182,212,0.2)'; }
+  if (fillEl) fillEl.style.width = '0%';
+  if (pctEl)  pctEl.textContent  = '0%';
+  const pauseBtn = document.getElementById('sbtn-pause');
+  if (pauseBtn) pauseBtn.innerHTML = '⏸ Pause';
+  showToast('Simulation reset', 'info');
+}
+
+function simReplay() {
+  simReset();
+  setTimeout(() => { simShowBefore(); }, 400);
+  setTimeout(() => { simShowAfter(); }, 4500);
+}
+
+// ── Dashboard refresh ─────────────────────────────────────────────────────────
+async function refreshDashboard() {
+  try {
+    const [stats, incidents] = await Promise.all([api.getStats(), api.getIncidents()]);
+    document.getElementById('s-active').textContent = stats.active_incidents ?? 0;
+    document.getElementById('s-resp').textContent   = stats.average_response_time_min ?? '—';
+    document.getElementById('s-traffic').textContent = stats.traffic_impact_level || (stats.active_incidents > 0 ? 'High' : 'Low');
+    document.getElementById('s-env').textContent    = stats.environment_risk_level || 'Low';
+    document.getElementById('s-total').textContent  = stats.total_incidents ?? 0;
+
+    document.querySelectorAll('.incident-badge').forEach(b => {
+      b.textContent = stats.active_incidents;
+      b.style.display = stats.active_incidents > 0 ? '' : 'none';
+    });
+
+    const tbody = document.getElementById('incidents-tbody');
+    if (incidents.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:24px">No incidents yet</td></tr>';
+    } else {
+      tbody.innerHTML = incidents.slice(-10).reverse().map(i => `
+        <tr class="incident-row" onclick="window.location='/agents.html?id=${i.id}'">
+          <td class="font-mono text-xs text-cyan">${i.id}</td>
+          <td style="font-size:12px">${i.type}</td>
+          <td><span class="${severityColor(i.severity)}" style="font-size:11px;font-weight:700">${i.severity}</span></td>
+          <td><span style="font-size:11px;color:${i.status==='Resolved'?'var(--green)':'var(--orange)'}">${i.status}</span></td>
+        </tr>`).join('');
+    }
+
+    const typeCounts = stats.incident_types || {};
+  } catch(e) {
+    document.getElementById('sys-status').textContent = '● Backend Offline';
+    document.getElementById('sys-status').className = 'header-alert warn';
+    showToast('Cannot reach backend. Is the server running?', 'error');
+  }
+}
+
+// ── Live Demo (full animated sequence) ────────────────────────────────────────
+async function runLiveDemo() {
+  const btn    = document.getElementById('btn-run-demo');
+  const status = document.getElementById('demo-status');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Running Demo...';
+
+  const demoSteps = [
+    { msg: '🚨 Riyadh incident detected — fuel tanker spill on King Fahd Road...', delay: 1000 },
+    { msg: '🔴 Showing traffic congestion before optimization...', delay: 1200 },
+    { msg: '🚦 Traffic Agent analyzing congestion & blocking roads...', delay: 1200 },
+    { msg: '🚨 Emergency Agent selecting the correct response unit — detecting delay...', delay: 1200 },
+    { msg: '⚡ Calculating Normal ETA vs Priority ETA...', delay: 1200 },
+    { msg: '🛣️ Building emergency corridor...', delay: 1000 },
+    { msg: '🚦 Signal priority activated at key intersections...', delay: 1000 },
+    { msg: '🌿 Environment Agent assessing incident-specific risk zone...', delay: 1000 },
+    { msg: '🎯 Coordinator Agent approving emergency corridor...', delay: 1200 },
+    { msg: '🗺️ Starting live vehicle movement simulation...', delay: 800 },
+  ];
+
+  for (const step of demoSteps) {
+    status.textContent = step.msg;
+    await new Promise(r => setTimeout(r, step.delay));
+  }
+
+  try {
+    const result = await api.runCameraDemo("CAM-KFD-01");
+    _demoResult = result;
+    const { incident, agent_responses, final_decision } = result;
+
+    // Build scene data for animation
+    _sceneData = VehicleAnimation.buildSceneData(incident, agent_responses);
+    const primaryVehicle = (_sceneData.fleet || []).find(v => v.role === 'primary') || (_sceneData.fleet || [])[0] || {};
+    const primaryLabel = primaryVehicle.label || primaryVehicle.type || 'Emergency vehicle';
+
+    // ── Phase 1: Before (4 seconds) ──
+    status.textContent = '🔴 PHASE 1: Before Optimization — ' + primaryLabel + ' delayed in traffic...';
+    clearMap();
+    if (cityData) addCityInfrastructure(cityData);
+    simUpdatePhaseBar('before');
+    simUpdatePills('before');
+    buildFleetCards(_sceneData.fleet, _sceneData.isHazard);
+    VehicleAnimation.showBeforeScene(_sceneData);
+    document.getElementById('sim-eta-num').textContent = _sceneData.normalEta || '12';
+    const bstatEl = document.getElementById('sim-ev-status');
+    const fleetN = (_sceneData.fleet||[]).length;
+    if (bstatEl) { bstatEl.textContent = '🔴 BEFORE — ' + fleetN + ' units delayed in congestion'; bstatEl.style.color = 'var(--red)'; bstatEl.style.borderColor = 'rgba(239,68,68,0.4)'; }
+    simSetButtons(true);
+    showToast('⚠️ Before: ' + primaryLabel + ' delayed. Normal ETA: ' + (_sceneData.normalEta||12) + ' min', 'warn');
+
+    await new Promise(r => setTimeout(r, 4000));
+
+    // ── Phase 2: After (animated EV movement) ──
+    status.textContent = '⚡ PHASE 2: Emergency Corridor Activated — Live vehicle movement...';
+    VehicleAnimation.reset();
+    clearMap();
+    if (cityData) addCityInfrastructure(cityData);
+    simUpdatePhaseBar('after');
+    simUpdatePills('after');
+    document.getElementById('sim-progress-fill').style.width = '0%';
+    document.getElementById('sim-progress-pct').textContent = '0%';
+
+    VehicleAnimation.showAfterScene(_sceneData, () => {
+      // Arrived callback
+      simUpdatePhaseBar('arrived');
+      status.textContent = '✅ ' + primaryLabel + ' ARRIVED — Response time optimized!';
+      showToast('✅ Demo complete — ETA optimized by ' + ((_sceneData.normalEta||12) - (_sceneData.priorityEta||5)) + ' min!', 'success');
+    });
+
+    showToast('⚡ After: Emergency corridor active! Priority ETA: ' + (_sceneData.priorityEta||5) + ' min', 'success');
+
+    // ── Render supporting panels ──
+
+    const tc = document.getElementById('timeline-card');
+    tc.style.display = '';
+    renderTimeline(final_decision.response_timeline || [], 'timeline-container');
+
+    renderEvEtaPanel(agent_responses, 'ev-eta-container');
+    renderCoordinatorDecision(final_decision, 'coordinator-container');
+
+    await refreshDashboard();
+
+    setTimeout(() => {
+      const evPanel = document.getElementById('ev-eta-container');
+      if (evPanel && evPanel.innerHTML) evPanel.scrollIntoView({ behavior: 'smooth' });
+    }, 1000);
+
+  } catch(e) {
+    showToast('Demo failed: ' + e.message, 'error');
+    status.textContent = '❌ Demo failed — is the backend running?';
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '📹 Run Camera-Triggered Incident Demo';
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  const map = initMap('map', 24.7136, 46.6753, 13);
+  VehicleAnimation.init(map);
+
+  // Wire up ETA + status callbacks
+  VehicleAnimation.setEtaCallback((eta, statusMsg, vehicle) => {
+    simUpdateEta(eta, statusMsg, vehicle);
+    if (_sceneData && eta !== null) {
+      const pct = Math.max(0, Math.min(100, Math.round((1 - (eta / (_sceneData.priorityEta||5))) * 100)));
+      const fillEl = document.getElementById('sim-progress-fill');
+      const pctEl  = document.getElementById('sim-progress-pct');
+      if (fillEl) fillEl.style.width = pct + '%';
+      if (pctEl)  pctEl.textContent  = pct + '%';
+    }
+  });
+  VehicleAnimation.setFleetCallback((idx, progress, vehicle) => updateFleetCard(idx, progress, vehicle));
+  VehicleAnimation.setStatusCallback((phase) => simUpdatePills(phase));
+
+  cityData = await api.getCityData().catch(() => null);
+  if (cityData) addCityInfrastructure(cityData);
+
+
+  await refreshDashboard();
+});
+</script>
+</body>
+</html>

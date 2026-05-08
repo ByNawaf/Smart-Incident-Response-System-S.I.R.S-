@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings — S.I.R.S</title>
+<link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-title">S.I.R.S</div>
+      <div class="logo-sub">Smart Incident Response</div>
+      <div class="sidebar-status"><span class="status-dot"></span> System Operational</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Navigation</div>
+      <a href="/command-center.html" class="nav-item"><span class="nav-icon">🎛️</span> Command Center</a>
+      <a href="/index.html" class="nav-item"><span class="nav-icon">🏠</span> Home</a>
+      <a href="/dashboard.html" class="nav-item"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="/simulation.html" class="nav-item"><span class="nav-icon">🚀</span> Simulation</a>
+      <a href="/agents.html" class="nav-item"><span class="nav-icon">🤖</span> Agents Analysis</a>
+      <a href="/reports.html" class="nav-item"><span class="nav-icon">📋</span> Reports</a>
+      <div class="nav-section-label">More</div>
+      <a href="/judges.html" class="nav-item"><span class="nav-icon">🎬</span> Judges View</a>
+      <a href="/settings.html" class="nav-item active"><span class="nav-icon">⚙️</span> Settings</a>
+    </nav>
+    <div class="sidebar-footer">S.I.R.S <span class="ver">v1.6</span></div>
+  </div>
+
+  <div class="main-content">
+    <header class="header">
+      <div class="header-title">Settings</div>
+      <div class="header-spacer"></div>
+      <div class="header-time" id="live-clock">00:00:00</div>
+    </header>
+
+    <div class="page">
+      <div class="page-header">
+        <h1>System Settings</h1>
+        <p>Configure local Ollama AI and no-billing OpenStreetMap/OSRM routing</p>
+      </div>
+
+      <div class="grid-2" style="grid-template-columns:3fr 2fr">
+        <div>
+          <!-- AI Settings -->
+          <div class="card mb-16">
+            <div class="card-header"><span>🤖</span><h3>Local AI Configuration</h3>
+              <span class="card-badge" id="ai-status-badge" style="background:rgba(16,185,129,0.15);color:var(--green)">Ollama Only</span>
+            </div>
+            <div class="card-body">
+              <div class="alert alert-info mb-16">
+                ℹ️ This version uses <b>Ollama only</b> for local AI reasoning.
+                Recommended model for your 32GB RAM + RTX 4060 setup: <b>qwen3:8b</b>.
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">AI Provider</label>
+                <input class="form-control" id="ai-provider" value="ollama" disabled>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Ollama Base URL</label>
+                <input class="form-control" id="ollama-base-url" placeholder="http://localhost:11434">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Ollama Model</label>
+                <input class="form-control" id="ollama-model" placeholder="qwen3:8b">
+                <div class="text-xs text-muted mt-4">Install once with: <code>ollama pull qwen3:8b</code></div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Ollama Timeout (seconds)</label>
+                <input type="number" class="form-control" id="ollama-timeout" placeholder="90" min="10" max="300">
+              </div>
+            </div>
+          </div>
+
+          <!-- Map & Routing Settings -->
+          <div class="card mb-16">
+            <div class="card-header"><span>🗺️</span><h3>OpenStreetMap / OSRM Real Routing</h3>
+              <span class="card-badge" id="maps-status-badge" style="background:rgba(59,130,246,0.15);color:var(--cyan)">Optional</span>
+            </div>
+            <div class="card-body">
+              <div class="alert alert-info mb-16">
+                No Google billing is required. The visible map uses OpenStreetMap/Leaflet by default, and real road paths come from OSRM. Google keys are optional only if you later enable billing.
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Optional Google Maps Browser Key</label>
+                <div style="display:flex;gap:8px">
+                  <input type="password" class="form-control" id="google-browser-key" placeholder="AIza...">
+                  <button class="btn btn-ghost btn-sm" onclick="toggleVis('google-browser-key')">👁️</button>
+                </div>
+                <div class="text-xs text-muted mt-4" id="google-browser-status">Not configured</div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Optional Google Routes Server Key</label>
+                <div style="display:flex;gap:8px">
+                  <input type="password" class="form-control" id="google-routes-key" placeholder="AIza...">
+                  <button class="btn btn-ghost btn-sm" onclick="toggleVis('google-routes-key')">👁️</button>
+                </div>
+                <div class="text-xs text-muted mt-4" id="google-routes-status">Not configured</div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Optional Google Places Server Key <span class="text-xs text-muted">(not required for this Riyadh demo)</span></label>
+                <div style="display:flex;gap:8px">
+                  <input type="password" class="form-control" id="google-places-key" placeholder="AIza...">
+                  <button class="btn btn-ghost btn-sm" onclick="toggleVis('google-places-key')">👁️</button>
+                </div>
+                <div class="text-xs text-muted mt-4" id="google-places-status">Not configured</div>
+              </div>
+
+              <div class="alert alert-warning mb-16" style="font-size:12px">
+                ✅ Real routing now uses <b>OSRM/OpenStreetMap</b> with no Google billing. Riyadh emergency origins are loaded from curated local station data. Traffic-light priority points are derived from route maneuvers/intersections.
+              </div>
+
+              <button class="btn btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+              <button class="btn btn-ghost" style="margin-left:8px" onclick="testConnection()">🔗 Test Connection</button>
+            </div>
+          </div>
+
+          <!-- System Info -->
+          <div class="card mb-16">
+            <div class="card-header"><span>📡</span><h3>System Status</h3></div>
+            <div class="card-body">
+              <div id="system-status-list">
+                <div class="agent-finding-row"><span class="finding-label">Backend API</span><span id="ss-backend" class="finding-value text-muted">Checking...</span></div>
+                <div class="agent-finding-row"><span class="finding-label">AI Service</span><span id="ss-ai" class="finding-value text-muted">Checking...</span></div>
+                <div class="agent-finding-row"><span class="finding-label">City Data</span><span id="ss-city" class="finding-value text-muted">Checking...</span></div>
+                <div class="agent-finding-row"><span class="finding-label">Agents Online</span><span class="finding-value text-green">5 / 5</span></div>
+                <div class="agent-finding-row"><span class="finding-label">API Version</span><span class="finding-value text-cyan">v1.6.0-osrm-riyadh</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Danger Zone -->
+          <div class="card">
+            <div class="card-header"><span>⚠️</span><h3>Data Management</h3></div>
+            <div class="card-body">
+              <p class="text-sm text-muted mb-16">Clear all stored incident data. This cannot be undone.</p>
+              <button class="btn btn-danger btn-sm" onclick="clearData()">🗑️ Clear All Incidents</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Help panel -->
+        <div>
+          <div class="card mb-16">
+            <div class="card-header"><span>🚀</span><h3>Quick Start</h3></div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div class="alert alert-info" style="font-size:12px">
+                  <div><b>1. Start Backend</b><br>Run <code style="font-family:monospace;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px">start.bat</code> or <code style="font-family:monospace;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px">py -m uvicorn main:app --reload</code> in the backend folder</div>
+                </div>
+                <div class="alert alert-info" style="font-size:12px">
+                  <div><b>2. Open Browser</b><br>Navigate to <code style="font-family:monospace;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px">http://localhost:8000</code></div>
+                </div>
+                <div class="alert alert-info" style="font-size:12px">
+                  <div><b>3. Run Demo</b><br>Click the "Run Live Demo" button on the Dashboard or Judges View</div>
+                </div>
+                <div class="alert alert-success" style="font-size:12px">
+                  <div><b>4. Start Ollama</b><br>Run <code style="font-family:monospace;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px">ollama serve</code>, then <code style="font-family:monospace;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px">ollama pull qwen3:8b</code></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-16">
+            <div class="card-header"><span>🔗</span><h3>API Endpoints</h3></div>
+            <div class="card-body">
+              <div style="font-size:11px;font-family:'JetBrains Mono',monospace;display:flex;flex-direction:column;gap:6px;color:var(--text-muted)">
+                <div><span style="color:#10b981">GET</span>  /api/health</div>
+                <div><span style="color:#10b981">GET</span>  /api/incidents</div>
+                <div><span style="color:#3b82f6">POST</span> /api/incidents</div>
+                <div><span style="color:#3b82f6">POST</span> /api/incidents/{id}/analyze</div>
+                <div><span style="color:#3b82f6">POST</span> /api/incidents/{id}/coordinate</div>
+                <div><span style="color:#10b981">GET</span>  /api/incidents/{id}/report</div>
+                <div><span style="color:#3b82f6">POST</span> /api/demo/run</div>
+                <div><span style="color:#10b981">GET</span>  /api/city-data</div>
+              </div>
+              <a href="http://localhost:8000/docs" target="_blank" class="btn btn-ghost btn-sm btn-full mt-12">📖 Open API Docs (Swagger)</a>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><span>🏗️</span><h3>Agent Architecture</h3></div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:8px;font-size:12px">
+                <div class="flex-gap-8"><span>🚦</span><div><b>Traffic Agent</b> — congestion, rerouting</div></div>
+                <div class="flex-gap-8"><span>🚑</span><div><b>Emergency Agent</b> — dispatch, ETA</div></div>
+                <div class="flex-gap-8"><span>🌿</span><div><b>Environment Agent</b> — AQI, risk zones</div></div>
+                <div class="flex-gap-8"><span>🔬</span><div><b>Analysis Agent</b> — cause, prevention</div></div>
+                <div class="flex-gap-8"><span>🎯</span><div><b>Coordinator Agent</b> — final plan</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="/static/js/api.js"></script>
+<script src="/static/js/app.js"></script>
+<script>
+function toggleVis(id) {
+  const inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+async function loadSettings() {
+  try {
+    const s = await api.getSettings();
+    document.getElementById('ai-provider').value = 'ollama';
+    document.getElementById('ollama-base-url').value = s.ollama_base_url || 'http://localhost:11434';
+    document.getElementById('ollama-model').value = s.ollama_model || 'qwen3:8b';
+    document.getElementById('ollama-timeout').value = s.ollama_timeout || 90;
+
+    if (s.google_maps_browser_key_set) {
+      document.getElementById('google-browser-status').textContent = '✅ Configured — ' + (s.google_maps_browser_key || '');
+      document.getElementById('google-browser-status').style.color = 'var(--green)';
+    }
+    if (s.google_routes_key_set) {
+      document.getElementById('google-routes-status').textContent = '✅ Configured — ' + (s.google_routes_api_key || '');
+      document.getElementById('google-routes-status').style.color = 'var(--green)';
+    }
+    if (s.google_places_key_set || s.google_routes_key_set) {
+      document.getElementById('google-places-status').textContent = '✅ Configured' + (s.google_places_api_key ? ' — ' + s.google_places_api_key : ' via Routes key');
+      document.getElementById('google-places-status').style.color = 'var(--green)';
+    }
+
+    const ollama = s.ollama_status || {};
+    const aiBadge = document.getElementById('ai-status-badge');
+    if (ollama.reachable && ollama.model_installed) {
+      aiBadge.textContent = '✅ Ollama Ready';
+      aiBadge.style.color = 'var(--green)';
+    } else if (ollama.reachable) {
+      aiBadge.textContent = '⚠️ Model Missing';
+      aiBadge.style.color = 'var(--orange)';
+    } else {
+      aiBadge.textContent = '⚠️ Ollama Offline';
+      aiBadge.style.color = 'var(--orange)';
+    }
+
+    const mapsBadge = document.getElementById('maps-status-badge');
+    mapsBadge.textContent = '✅ OSRM/OpenStreetMap Ready';
+    mapsBadge.style.color = 'var(--green)';
+  } catch(e) {}
+}
+
+async function saveSettings() {
+  const payload = {
+    ai_provider: 'ollama',
+    ollama_base_url: document.getElementById('ollama-base-url').value || 'http://localhost:11434',
+    ollama_model: document.getElementById('ollama-model').value || 'qwen3:8b',
+    ollama_timeout: parseInt(document.getElementById('ollama-timeout').value || '90'),
+    ollama_enabled: true,
+    google_maps_enabled: false,
+    google_maps_browser_key: document.getElementById('google-browser-key').value || undefined,
+    google_routes_api_key: document.getElementById('google-routes-key').value || undefined,
+    google_places_api_key: document.getElementById('google-places-key').value || undefined,
+    google_places_enabled: true,
+  };
+  try {
+    await api.saveSettings(payload);
+    showToast('Settings saved successfully!', 'success');
+    loadSettings();
+  } catch(e) { showToast('Error saving: ' + e.message, 'error'); }
+}
+
+async function testConnection() {
+  const [bEl, aEl, cEl] = ['ss-backend', 'ss-ai', 'ss-city'].map(id => document.getElementById(id));
+  bEl.textContent = 'Testing...'; aEl.textContent = 'Testing...'; cEl.textContent = 'Testing...';
+  try {
+    const healthRes = await fetch('/api/health');
+    const health = await healthRes.json();
+    await api.getCityData();
+    const googleDiag = await fetch('/api/google/diagnostics').then(r => r.ok ? r.json() : null).catch(() => null);
+    bEl.textContent = '✅ Online'; bEl.style.color = 'var(--green)';
+    const ollama = health.ollama || {};
+    if (ollama.reachable && ollama.model_installed) {
+      aEl.textContent = `✅ Ollama Ready (${ollama.model})`;
+      aEl.style.color = 'var(--green)';
+    } else if (ollama.reachable) {
+      aEl.textContent = `⚠️ Ollama online, pull ${ollama.model}`;
+      aEl.style.color = 'var(--orange)';
+    } else {
+      aEl.textContent = '⚠️ Ollama offline — rule-based fallback active';
+      aEl.style.color = 'var(--orange)';
+    }
+    cEl.textContent = '✅ Loaded'; cEl.style.color = 'var(--green)';
+    if (googleDiag) {
+      const mapsBadge = document.getElementById('maps-status-badge');
+      if (googleDiag.routes && (googleDiag.routes.source === 'osrm' || googleDiag.routes.source === 'google_routes')) {
+        mapsBadge.textContent = googleDiag.routes.source === 'osrm' ? '✅ OSRM/OpenStreetMap Active' : '✅ Google Routes Active';
+        mapsBadge.style.color = 'var(--green)';
+        showToast((googleDiag.routes.message || 'Real routing active') + ' / ' + ((googleDiag.places&&googleDiag.places.message)||'Riyadh station data loaded'), 'success');
+      } else {
+        mapsBadge.textContent = '⚠️ Last-resort Fallback Active';
+        mapsBadge.style.color = 'var(--orange)';
+        showToast('OSRM is not reachable: ' + ((googleDiag.routes&&googleDiag.routes.message)||'check routing'), 'warning');
+      }
+    } else {
+      showToast('Backend connected!', 'success');
+    }
+  } catch(e) {
+    bEl.textContent = '❌ Offline'; bEl.style.color = 'var(--red)';
+    aEl.textContent = '❌ Unavailable'; aEl.style.color = 'var(--red)';
+    cEl.textContent = '❌ Unavailable'; cEl.style.color = 'var(--red)';
+    showToast('Backend offline — start the server', 'error');
+  }
+}
+
+let clearConfirmArmed = false;
+async function clearData() {
+  if (!clearConfirmArmed) {
+    clearConfirmArmed = true;
+    showToast('Click Clear All Data again within 5 seconds to confirm.', 'warn');
+    setTimeout(() => clearConfirmArmed = false, 5000);
+    return;
+  }
+  try {
+    const incidents = await api.getIncidents();
+    for (const inc of incidents) await api.deleteIncident(inc.id);
+    clearConfirmArmed = false;
+    showToast('All incidents cleared', 'success');
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+document.addEventListener('DOMContentLoaded', () => { loadSettings(); testConnection(); });
+</script>
+</body>
+</html>
